@@ -1,8 +1,9 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const path = require("path");
 
+let win;
 const createWindow = () => {
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: { preload: path.join(__dirname, "/config/preload.js") }, // __dirname当前正在执行脚本的路径 ，join将两个路径连接起来
@@ -12,7 +13,17 @@ const createWindow = () => {
 };
 
 app.whenReady().then(() => {
+  ipcMain.handle("ping", () => "pong");
   createWindow();
+
+  // 注册f12快捷键
+  globalShortcut.register("CommandOrControl+f12", () => {
+    if (win.webContents.isDevToolsOpened()) {
+      win.webContents.closeDevTools();
+    } else {
+      win.webContents.openDevTools();
+    }
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
